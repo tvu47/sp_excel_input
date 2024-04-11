@@ -2,6 +2,7 @@ import openpyxl
 import pickle 
 import os
 import json
+import numbers
 
 default_config = {
   'input_col_num': 29,
@@ -9,7 +10,7 @@ default_config = {
   'begin_name_row_num': 2,
   'ending_name_row_num': 96,
   'name_col': 'AC',
-  'file_excel_name':'c1dhl_1.xlsx'
+  'file_excel_name':'c1dhl_2.xlsx'
 }
 
 path_config = 'config.pkl'
@@ -104,6 +105,10 @@ if(select_option == '1') :
         print("Invalid json string:", e)
     print('time (minutes): ')
     call_time = input()
+    if(isinstance(call_time, numbers.Number) == False):
+      print('')
+      print('Thoát khỏi chương trình, bye bye... ')
+      break 
     if(call_time == 'Q' or call_time =='q'):
       i=-1
       print('')
@@ -123,28 +128,6 @@ if(select_option == '1') :
         xlsx.save(default_config['file_excel_name'])
         print('OK.')
         break
-
-
-    ## getting the reference of the cells which we want to get the data from
-    # names = sheet[row_[0]:row_[1]]
-    # for number in range(default_config['begin_name_row_num'], default_config['ending_name_row_num']):
-    #   tag = sheet.cell(row = number, column = default_config['search_col_num'])
-    #   stt = sheet.cell(row = number, column = 1)
-    #   if(pre_name.upper() in tag.value):
-    #     if(sheet.cell(row = number, column = default_config['input_col_num']).value is not None):
-    #       number_time_previous = sheet.cell(row = number, column = default_config['input_col_num']).value
-    #       sheet[default_config['name_col']+str(number)] = str(number_time_previous) +'+'+ str(call_time)
-    #       xlsx.save(default_config['file_excel_name'])
-    #       print('OK.')
-    #       break
-    #     else:
-    #       sheet['AC'+str(number)] = '='+ call_time
-    #       xlsx.save(default_config['file_excel_name'])
-    #       print('OK.')
-    #       break
-    #   elif(number == 95):
-    #     print('Không tìm thấy tên trong danh sách.')
-    #     break
 
 if(select_option =='2'):
   print('-------------------------------')
