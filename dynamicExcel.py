@@ -1,6 +1,7 @@
 import openpyxl
 import pickle 
 import os
+import json
 
 default_config = {
   'input_col_num': 29,
@@ -54,28 +55,28 @@ def checkSelectName(founded_names, select):
 def checkName(name_csi):
   founded_name_data = {}
   bol_check_emp = 0
+
   for number in range(default_config['begin_name_row_num'], default_config['ending_name_row_num']):
     tag = sheet.cell(row = number, column = default_config['search_col_num'])
     stt = sheet.cell(row = number, column = 1)
     if(name_csi.upper() in tag.value):
       founded_name_data[stt.value] = tag.value
+      id_name = stt.value
       bol_check_emp = 1
     elif(number == default_config['ending_name_row_num']):
       if(bol_check_emp == 0):
         print('not found anyone in list.')
-  print(founded_name_data)
   for key, value in founded_name_data.items():
     print(str(key) + '. '+str(value))
-  while 1>0:
-    i=0
-    print('---------------')
-    print('nhập id tên muốn thao tác:')
-    select = input()
-    if(int(checkSelectName(founded_name_data, select)) == 1):
-      print('Đã chọn: '+str(founded_name_data[int(select)]))
-      return founded_name_data[int(select)]
-    
-    return 0
+  if(len(founded_name_data) == 1):
+    return founded_name_data
+  print('---------------')
+  print('nhập id tên muốn thao tác:')
+  select = input()
+  if(checkSelectName(founded_name_data, select) == 1):
+    print('Đã chọn: '+str(founded_name_data[int(select)]))
+    select_obj = {key: str(founded_name_data[int(select)])}
+    return select_obj
   return 0
 
   
@@ -92,11 +93,15 @@ if(select_option == '1') :
       print('')
       print('Thoát khỏi chương trình, bye bye... ')
       break
-    
-    if(checkName(pre_name) == 0):
-      break
-    else:
-      pre_name = checkName(pre_name)
+    try:
+        # Loading the json string using json.loads() method
+        s = json.dumps(checkName(pre_name))
+        present_name = json.loads(s)
+        print('hello')
+        print(present_name)
+    except json.decoder.JSONDecodeError as e:
+        # Catching the exception and printing the error message
+        print("Invalid json string:", e)
     print('time (minutes): ')
     call_time = input()
     if(call_time == 'Q' or call_time =='q'):
@@ -104,27 +109,42 @@ if(select_option == '1') :
       print('')
       print('Thoát khỏi chương trình, bye bye... ')
       break
+
+    for key, value in present_name.items():
+      if(sheet.cell(row = int(key)+1, column = default_config['input_col_num']).value is not None):
+        number_time_previous = sheet.cell(row = int(key)+1, column = default_config['input_col_num']).value
+        print(number_time_previous)
+        sheet[default_config['name_col']+str(int(key)+1)] = str(number_time_previous) +'+'+ str(call_time)
+        xlsx.save(default_config['file_excel_name'])
+        print('OK.')
+        break
+      else:
+        sheet[default_config['name_col']+str(int(key)+1)] = '='+ call_time
+        xlsx.save(default_config['file_excel_name'])
+        print('OK.')
+        break
+
+
     ## getting the reference of the cells which we want to get the data from
     # names = sheet[row_[0]:row_[1]]
-    for number in range(default_config['begin_name_row_num'], default_config['ending_name_row_num']):
-      tag = sheet.cell(row = number, column = default_config['search_col_num'])
-      stt = sheet.cell(row = number, column = 1)
-      if(pre_name.upper() in tag.value):
-        print('Founded: {id: '+ str(stt.value) +', name: '+str(tag.value)+'}')
-        if(sheet.cell(row = number, column = default_config['input_col_num']).value is not None):
-          number_time_previous = sheet.cell(row = number, column = default_config['input_col_num']).value
-          sheet[default_config['name_col']+str(number)] = str(number_time_previous) +'+'+ str(call_time)
-          xlsx.save(default_config['file_excel_name'])
-          print('OK.')
-          break
-        else:
-          sheet['AC'+str(number)] = '='+ call_time
-          xlsx.save(default_config['file_excel_name'])
-          print('OK.')
-          break
-      elif(number == 95):
-        print('Không tìm thấy tên trong danh sách.')
-        break
+    # for number in range(default_config['begin_name_row_num'], default_config['ending_name_row_num']):
+    #   tag = sheet.cell(row = number, column = default_config['search_col_num'])
+    #   stt = sheet.cell(row = number, column = 1)
+    #   if(pre_name.upper() in tag.value):
+    #     if(sheet.cell(row = number, column = default_config['input_col_num']).value is not None):
+    #       number_time_previous = sheet.cell(row = number, column = default_config['input_col_num']).value
+    #       sheet[default_config['name_col']+str(number)] = str(number_time_previous) +'+'+ str(call_time)
+    #       xlsx.save(default_config['file_excel_name'])
+    #       print('OK.')
+    #       break
+    #     else:
+    #       sheet['AC'+str(number)] = '='+ call_time
+    #       xlsx.save(default_config['file_excel_name'])
+    #       print('OK.')
+    #       break
+    #   elif(number == 95):
+    #     print('Không tìm thấy tên trong danh sách.')
+    #     break
 
 if(select_option =='2'):
   print('-------------------------------')
